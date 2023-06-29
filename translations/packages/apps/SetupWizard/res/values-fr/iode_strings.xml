@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2022 Iode Technologies
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="location_access_summary"><b>Activer les services de localisation.</b> Les applications que vous installez ayant obtenu votre permission ainsi que les applications système pourront utiliser vos informations de localisation. Cela peut inclure votre position actuelle et les dernières positions connues.</string>
+
+    <!-- Push notification settings -->
+    <string name="setup_push_notifications">Notifications</string>
+    <string name="push_notifications_summary"><b>Activer les notifications \'push\'.</b> Beaucoup d\'applications comme Whatsapp, Twitter, ProtonMail utilisent les services Google pour envoyer des notifications. Elles peuvent être activées par <b>microG</b>, une implémentation libre des services Google, incluse dans iodé.\nLes notifications \'push\' peuvent être rétablies ultérieurement dans les paramètres d\'Android (Système, microG).\n<b>Remarque :</b> microG envoie des données anonymes vers les serveurs Google.</string>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2022 Iode Technologies
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Preinstalled apps management -->
+    <string name="iode_preinstalled_apps_dashboard_title">Preinstalled apps</string>
+    <string name="iode_preinstalled_apps_dashboard_summary">Uninstall, reinstall</string>
+
+    <!-- Fingerprint authentication vibration -->
+    <string name="fp_success_auth_vib_title">Fingerprint authentication</string>
+    <string name="fp_success_auth_vib_summary">Vibrate on successful fingerprint authentication</string>
+
+    <!-- Smart charging -->
+    <string name="smart_charging_title">Smart Charging</string>
+    <string name="smart_charging_summary">Set maximum charging level</string>
+    <string name="smart_charging_switch_title">Use Smart charging</string>
+    <string name="smart_charging_level_title">Stop trigger level</string>
+    <string name="smart_charging_resume_level_title">Start trigger level</string>
+    <string name="smart_charging_reset_stats_title">Reset battery statistics</string>
+    <string name="smart_charging_reset_stats_summary">Reset battery statistics after reaching user defined charging level</string>
+    <string name="smart_charging_footer">Smart Charging allows you to set maximum charging level to extend the lifespan of your battery</string>
+
+    <!-- Custom seekbar -->
+    <string name="custom_seekbar_value">Value: <xliff:g id="v">%s</xliff:g></string>
+    <string name="custom_seekbar_default_value">Default</string>
+    <string name="custom_seekbar_default_value_to_set">Default value: <xliff:g id="v">%s</xliff:g>\nLong press to set</string>
+    <string name="custom_seekbar_default_value_is_set">Default value is set</string>
+
+    <!-- Screen off fingerprint -->
+    <string name="screen_off_fingerprint_title">Screen off fingerprint</string>
+    <string name="screen_off_fingerprint_summary">Allow fingerprint authentication when screen is off</string>
+</resources>

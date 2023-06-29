@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2022 Iode Technologies
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Preinstalled apps management -->
+    <string name="iode_preinstalled_apps_dashboard_title">Applications préinstallées</string>
+    <string name="iode_preinstalled_apps_dashboard_summary">Désinstaller, réinstaller</string>
+
+    <!-- Fingerprint authentication vibration -->
+    <string name="fp_success_auth_vib_title">Authentification par empreinte digitale</string>
+    <string name="fp_success_auth_vib_summary">Vibrer lorsque l\'authentification réussit</string>
+
+    <!-- Smart charging -->
+    <string name="smart_charging_title">Chargement limité</string>
+    <string name="smart_charging_summary">Définir le niveau de chargement maximum</string>
+    <string name="smart_charging_switch_title">Limiter le chargement</string>
+    <string name="smart_charging_level_title">Niveau d\'arrêt du chargement</string>
+    <string name="smart_charging_resume_level_title">Niveau de reprise du chargement</string>
+    <string name="smart_charging_reset_stats_title">Réinitialiser les statistiques de la batterie</string>
+    <string name="smart_charging_reset_stats_summary">Remettre à zéro les statistiques de la batterie lorsque le niveau maximum de chargement est atteint</string>
+    <string name="smart_charging_footer">Le chargement limité permet de définir un niveau maximum de chargement afin de prolonger la durée de vie de la batterie. Le chargement s\'arrête lorsque ce niveau est atteint, et reprend lorsque la
+ batterie se décharge jusqu\'au niveau de reprise.</string>
+
+    <!-- Custom seekbar -->
+    <string name="custom_seekbar_value">Valeur : <xliff:g id="v">%s</xliff:g></string>
+    <string name="custom_seekbar_default_value">défaut</string>
+    <string name="custom_seekbar_default_value_to_set">Valeur par défault : <xliff:g id="v">%s</xliff:g>\nAppui long pour définir</string>
+    <string name="custom_seekbar_default_value_is_set">La valeur par défault est définie</string>
+
+    <!-- Screen off fingerprint -->
+    <string name="screen_off_fingerprint_title">Empreinte digitale écran éteint</string>
+    <string name="screen_off_fingerprint_summary">Permet de s\'authentifier par empreinte digitale lorsque l\'écran est éteint</string>
+</resources>

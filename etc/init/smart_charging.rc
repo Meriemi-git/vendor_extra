@@ -1,0 +1,7 @@
+on post-fs-data
+  chown system system /sys/class/power_supply/battery/input_suspend
+  chown system system /sys/class/power_supply/battery/batt_slate_mode
+  chown system system /sys/bus/platform/drivers/mtk-kpd/stop_charging_percent
+  chown system system /sys/devices/platform/soc/soc:oplus,chg_intf/oplus_chg/usb/chg_enable
+  chown system system /sys/class/power_supply/usb/cc_toggle_enable
+  chown system system /sys/class/power_supply/usb/device/cc_toggle_enable

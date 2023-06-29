@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PowerOffAlarm</string>
+    <string name="dismiss">fermer</string>
+    <string name="firing_message">L\'alarme s\'est déclenchée !</string>
+    <string name="permdesc_power_off_alarm">définir une alarme qui allumera le téléphone s\'il est éteint</string>
+    <string name="permlab_power_off_alarm">Alarme de mise sous tension</string>
+    <string name="power_on_off_text">Allumer ou éteindre ?</string>
+    <string name="poweron_no">Éteindre</string>
+    <string name="poweron_yes">Allumer</string>
+    <string name="snooze">vibrer</string>
+</resources>

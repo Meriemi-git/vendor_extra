@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2022 Iode Technologies
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Preinstalled apps management -->
+    <string name="iode_preinstalled_apps_dashboard_title">Vorinstallierte Apps</string>
+    <string name="iode_preinstalled_apps_dashboard_summary">Deinstallieren, erneut installieren</string>
+
+    <!-- Fingerprint authentication vibration -->
+    <string name="fp_success_auth_vib_title">Fingerabdruck-Authentifizierung</string>
+    <string name="fp_success_auth_vib_summary">Bei erfolgreicher Fingerabdruck-Authentifizierung vibrieren</string>
+
+    <!-- Smart charging -->
+    <string name="smart_charging_title">Smart Charging</string>
+    <string name="smart_charging_summary">Maximalen Ladestand einstellen</string>
+    <string name="smart_charging_switch_title">Smart charging nutzen</string>
+    <string name="smart_charging_level_title">Stop Trigger Level</string>
+    <string name="smart_charging_resume_level_title">Start Trigger Level</string>
+    <string name="smart_charging_reset_stats_title">Batterie-Statistiken zurücksetzen</string>
+    <string name="smart_charging_reset_stats_summary">Batterie-Statistiken zurücksetzen, nachdem benutzerdefinierter Ladestand erreicht wurde</string>
+    <string name="smart_charging_footer">Smart Charging ermöglicht dir einen maximalen Ladestand einzustellen, um die Lebenszeit deines Akkus zu verlängern</string>
+
+    <!-- Custom seekbar -->
+    <string name="custom_seekbar_value">Wert: <xliff:g id="v">%s</xliff:g></string>
+    <string name="custom_seekbar_default_value">Standard</string>
+    <string name="custom_seekbar_default_value_to_set">Standardwert: <xliff:g id="v">%s</xliff:g>\nZum Einstellen lang drücken</string>
+    <string name="custom_seekbar_default_value_is_set">Standardwert ist eingestellt</string>
+
+    <!-- Screen off fingerprint -->
+    <string name="screen_off_fingerprint_title">Fingerabdruck bei Bildschirmsperre</string>
+    <string name="screen_off_fingerprint_summary">Aktiviert entsperren per Fingerabdruck bei Bildschirmsperre</string>
+</resources>
