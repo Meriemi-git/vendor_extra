@@ -31,5 +31,22 @@ PRODUCT_PACKAGES += \
 	domains-white \
 	default-apps
 
+
+ifeq (,$(INCLUDES_EXTRA_APPS))
 PRODUCT_PACKAGES += \
-	Iode
+	Iode \
+	F-Droid \
+	AuroraStore \
+	Etar \
+	Bitwarden \
+	Davx \
+	Firefox \
+	ProtonMail \
+	FairEmail \
+	Aves \
+	OrganicMaps \
+	QKSMS \
+	LibreTube \
+	Element \
+	Camera
+endif

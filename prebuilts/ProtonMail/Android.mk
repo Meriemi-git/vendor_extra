@@ -1,0 +1,11 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := ProtonMail
+LOCAL_MODULE_CLASS := APPS
+LOCAL_PRODUCT_MODULE := false
+LOCAL_CERTIFICATE := PRESIGNED
+LOCAL_SRC_FILES := ProtonMail-3.0.14.apk
+
+include $(BUILD_PREBUILT)
