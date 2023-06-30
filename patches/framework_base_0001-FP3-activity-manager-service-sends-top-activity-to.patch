@@ -1,0 +1,97 @@
+From 4353dc515d1e58bc84d5a7064808d86c4d92df43 Mon Sep 17 00:00:00 2001
+From: Meriemi-git <meriemi@protonmail.com>
+Date: Fri, 30 Jun 2023 09:29:12 +0200
+Subject: [PATCH] FP3: activity manager service sends top activity to 
+ iode-snort
+
+Change-Id: I34533aa9965a397e0a785b182b2181b45440d6a4
+---
+ core/java/android/app/Activity.java           |  6 ++++
+ core/java/android/app/IActivityManager.aidl   |  2 ++
+ .../server/am/ActivityManagerService.java     | 30 +++++++++++++++++++
+ 3 files changed, 38 insertions(+)
+
+diff --git a/core/java/android/app/Activity.java b/core/java/android/app/Activity.java
+index 03a97ba1d977..5338e97216d7 100644
+--- a/core/java/android/app/Activity.java
++++ b/core/java/android/app/Activity.java
+@@ -2078,6 +2078,12 @@ public class Activity extends ContextThemeWrapper
+     }
+ 
+     final void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason) {
++        if (isTopResumedActivity && !getPackageName().isEmpty()) {
++            try {
++                ActivityManager.getService().iodeSnortSendTopActivity(myUid());
++            } catch (RemoteException re) {
++            }
++        }
+         onTopResumedActivityChanged(isTopResumedActivity);
+ 
+         if (isTopResumedActivity) {
+diff --git a/core/java/android/app/IActivityManager.aidl b/core/java/android/app/IActivityManager.aidl
+index 69e6323e3422..9083827fb9d2 100644
+--- a/core/java/android/app/IActivityManager.aidl
++++ b/core/java/android/app/IActivityManager.aidl
+@@ -770,4 +770,6 @@ interface IActivityManager {
+      *  Force full screen for devices with cutout
+      */
+     boolean shouldForceCutoutFullscreen(in String packageName);
++
++    void iodeSnortSendTopActivity(in int uid);
+ }
+diff --git a/services/core/java/com/android/server/am/ActivityManagerService.java b/services/core/java/com/android/server/am/ActivityManagerService.java
+index db8c59f3af8c..bd6dd2f7f6a9 100644
+--- a/services/core/java/com/android/server/am/ActivityManagerService.java
++++ b/services/core/java/com/android/server/am/ActivityManagerService.java
+@@ -258,6 +258,8 @@ import android.graphics.Rect;
+ import android.hardware.display.DisplayManagerInternal;
+ import android.media.audiofx.AudioEffect;
+ import android.net.ConnectivityManager;
++import android.net.LocalSocket;
++import android.net.LocalSocketAddress;
+ import android.net.Proxy;
+ import android.net.Uri;
+ import android.os.AppZygote;
+@@ -435,6 +437,7 @@ import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
++import java.io.OutputStream;
+ import java.io.PrintWriter;
+ import java.io.StringWriter;
+ import java.nio.charset.StandardCharsets;
+@@ -18652,4 +18655,31 @@ public class ActivityManagerService extends IActivityManager.Stub
+                 AppOpsManager.OP_RUN_ANY_IN_BACKGROUND,
+                 info.uid, info.packageName) != AppOpsManager.MODE_ALLOWED;
+     }
++    
++    private final LocalSocketAddress mIodeSnortAddress = new LocalSocketAddress(
++            "iode-snort-control", LocalSocketAddress.Namespace.RESERVED);
++
++    private void iodeSnortSendCommand(String command) {
++        final LocalSocket socket = new LocalSocket(LocalSocket.SOCKET_STREAM);
++        try {
++            socket.connect(mIodeSnortAddress);
++        } catch (IOException e) {
++            Log.e(TAG, "Cannot connect to iode-snort-control socket");
++        }
++        if (socket.isConnected()) {
++            try {
++                socket.getOutputStream().write(command.getBytes());
++            } catch (IOException e) {
++                Log.e(TAG, "Cannot write to iode-snort-control socket");
++            }
++        }
++         try {
++            socket.close();
++        } catch (IOException e) {
++        }
++    }
++
++    public void iodeSnortSendTopActivity(int uid) {
++        iodeSnortSendCommand("TOPACTIVITY " + uid);
++    }
+ }
+-- 
+2.41.0
+

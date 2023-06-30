@@ -1,0 +1,485 @@
+From 31f4997f4e3ddebc12e0fc6a95d578164330b000 Mon Sep 17 00:00:00 2001
+From: Vincent Vidal <vincent@vidal.pm>
+Date: Mon, 9 Jan 2023 13:27:30 +0100
+Subject: [PATCH] add snort sepolicy
+
+---
+ prebuilts/api/33.0/private/bpfdomain.te       |  2 +-
+ prebuilts/api/33.0/private/bpfloader.te       |  5 +-
+ .../33.0/private/compat/32.0/32.0.ignore.cil  |  7 +++
+ prebuilts/api/33.0/private/domain.te          |  2 +-
+ prebuilts/api/33.0/private/file_contexts      |  9 +++
+ prebuilts/api/33.0/private/iode-snort.te      |  7 +++
+ prebuilts/api/33.0/private/network_stack.te   |  4 +-
+ prebuilts/api/33.0/private/property_contexts  |  2 +
+ prebuilts/api/33.0/public/domain.te           |  1 +
+ prebuilts/api/33.0/public/file.te             |  6 ++
+ prebuilts/api/33.0/public/iode-snort.te       | 57 +++++++++++++++++++
+ prebuilts/api/33.0/public/property.te         |  1 +
+ private/bpfdomain.te                          |  2 +-
+ private/bpfloader.te                          |  5 +-
+ private/compat/32.0/32.0.ignore.cil           |  7 +++
+ private/domain.te                             |  2 +-
+ private/file_contexts                         |  9 +++
+ private/iode-snort.te                         |  7 +++
+ private/network_stack.te                      |  4 +-
+ private/property_contexts                     |  2 +
+ public/domain.te                              |  1 +
+ public/file.te                                |  6 ++
+ public/iode-snort.te                          | 57 +++++++++++++++++++
+ public/property.te                            |  1 +
+ 24 files changed, 194 insertions(+), 12 deletions(-)
+ create mode 100644 prebuilts/api/33.0/private/iode-snort.te
+ create mode 100644 prebuilts/api/33.0/public/iode-snort.te
+ create mode 100644 private/iode-snort.te
+ create mode 100644 public/iode-snort.te
+
+diff --git a/prebuilts/api/33.0/private/bpfdomain.te b/prebuilts/api/33.0/private/bpfdomain.te
+index 2be7f8874..f85ec646e 100644
+--- a/prebuilts/api/33.0/private/bpfdomain.te
++++ b/prebuilts/api/33.0/private/bpfdomain.te
+@@ -9,6 +9,6 @@ neverallow {
+ } self:global_capability_class_set { net_admin net_raw };
+ 
+ # any domain which uses bpf is a bpfdomain
+-neverallow { domain -bpfdomain } *:bpf *;
++neverallow { domain -bpfdomain -iodesnort } *:bpf *;
+ 
+ allow bpfdomain fs_bpf:dir search;
+diff --git a/prebuilts/api/33.0/private/bpfloader.te b/prebuilts/api/33.0/private/bpfloader.te
+index 54cc91666..17e6e271a 100644
+--- a/prebuilts/api/33.0/private/bpfloader.te
++++ b/prebuilts/api/33.0/private/bpfloader.te
+@@ -33,11 +33,11 @@ neverallow domain bpffs_type:dir ~{ add_name create getattr mounton open read re
+ # TODO: get rid of init & vendor_init
+ neverallow { domain -bpfloader -init -vendor_init } bpffs_type:file { map open setattr };
+ neverallow { domain -bpfloader } bpffs_type:file { create rename };
+-neverallow { domain -bpfloader -gpuservice -init -lmkd -mediaprovider_app -netd -netutils_wrapper                -system_server -vendor_init } fs_bpf:file               read;
++neverallow { domain -bpfloader -gpuservice -init -lmkd -mediaprovider_app -netd -netutils_wrapper                -iodesnort -system_server -vendor_init } fs_bpf:file               read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack                -vendor_init } fs_bpf_net_private:file   read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack -system_server -vendor_init } fs_bpf_net_shared:file    read;
+ neverallow { domain -bpfloader             -init                          -netd                   -network_stack -system_server -vendor_init } fs_bpf_netd_readonly:file read;
+-neverallow { domain -bpfloader             -init                          -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file   read;
++neverallow { domain -bpfloader             -init                          -netd -netutils_wrapper -network_stack -iodesnort -system_server -vendor_init } fs_bpf_netd_shared:file   read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack                -vendor_init } fs_bpf_tethering:file     read;
+ neverallow { domain -bpfloader -gpuservice                                -netd -netutils_wrapper -network_stack -system_server              } { bpffs_type -fs_bpf_vendor }:file write;
+ neverallow domain bpffs_type:file ~{ create map open read rename setattr write };
+@@ -49,6 +49,7 @@ neverallow {
+   -bpfloader
+   -gpuservice
+   -hal_health_server
++  -iodesnort
+   -mediaprovider_app
+   -netd
+   -netutils_wrapper
+diff --git a/prebuilts/api/33.0/private/compat/32.0/32.0.ignore.cil b/prebuilts/api/33.0/private/compat/32.0/32.0.ignore.cil
+index 7c3058ebc..96863611d 100644
+--- a/prebuilts/api/33.0/private/compat/32.0/32.0.ignore.cil
++++ b/prebuilts/api/33.0/private/compat/32.0/32.0.ignore.cil
+@@ -83,4 +83,11 @@
+     vendor_vm_file
+     virtual_device_service
+     wallpaper_effects_generation_service
++    iodesnort
++    snort_data_file
++    iodesnort_etc_file
++    iodesnort_exec
++    iodesnortcontrol_socket
++    iodesnortnetd_socket
++    iodesnort_prop
+ ))
+diff --git a/prebuilts/api/33.0/private/domain.te b/prebuilts/api/33.0/private/domain.te
+index bcb9d52e3..fca9186b6 100644
+--- a/prebuilts/api/33.0/private/domain.te
++++ b/prebuilts/api/33.0/private/domain.te
+@@ -557,7 +557,7 @@ neverallow domain mlsvendorcompat:process fork;
+ 
+ # Only init and otapreopt_chroot should be mounting filesystems on locations
+ # labeled system or vendor (/product and /vendor respectively).
+-neverallow { domain -init -otapreopt_chroot } { system_file_type vendor_file_type }:dir_file_class_set mounton;
++neverallow { domain -init -otapreopt_chroot -iodesnort } { system_file_type vendor_file_type }:dir_file_class_set mounton;
+ 
+ # Only allow init and vendor_init to read/write mm_events properties
+ # NOTE: dumpstate is allowed to read any system property
+diff --git a/prebuilts/api/33.0/private/file_contexts b/prebuilts/api/33.0/private/file_contexts
+index 65baa5ddd..091480c44 100644
+--- a/prebuilts/api/33.0/private/file_contexts
++++ b/prebuilts/api/33.0/private/file_contexts
+@@ -847,3 +847,12 @@
+ /(system|product)/bin/check_dynamic_partitions  u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt_script          u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt                 u:object_r:postinstall_dexopt_exec:s0
++
++
++#############################
++# iodesnort additions
++/(system_ext|system/system_ext)/bin/iode-snort   u:object_r:iodesnort_exec:s0
++/data/snort(/.*)?          u:object_r:snort_data_file:s0
++/(system_ext|system/system_ext)/etc/iode-snort(/.*)?     u:object_r:iodesnort_etc_file:s0
++/dev/socket/iode-snort-control	u:object_r:iodesnortcontrol_socket:s0
++/dev/socket/iode-snort-netd	u:object_r:iodesnortnetd_socket:s0
+diff --git a/prebuilts/api/33.0/private/iode-snort.te b/prebuilts/api/33.0/private/iode-snort.te
+new file mode 100644
+index 000000000..a52d16bb9
+--- /dev/null
++++ b/prebuilts/api/33.0/private/iode-snort.te
+@@ -0,0 +1,7 @@
++typeattribute iodesnort coredomain;
++
++init_daemon_domain(iodesnort)
++
++allow iodesnort { fs_bpf fs_bpf_netd_shared}:dir search;
++allow iodesnort { fs_bpf fs_bpf_netd_shared}:file read;
++allow iodesnort bpfloader:bpf prog_run;
+diff --git a/prebuilts/api/33.0/private/network_stack.te b/prebuilts/api/33.0/private/network_stack.te
+index 3cdf884aa..bc20001cf 100644
+--- a/prebuilts/api/33.0/private/network_stack.te
++++ b/prebuilts/api/33.0/private/network_stack.te
+@@ -103,8 +103,8 @@ neverallow { domain -bpfloader -netd -network_stack -system_server } fs_bpf_netd
+ 
+ # T+: Only the bpfloader, netd, netutils_wrapper, network_stack and system_server should ever touch 'fs_bpf_netd_shared' programs/maps.
+ # netutils_wrapper requires access to be able to run iptables and only needs readonly access
+-neverallow { domain -bpfloader -init -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:dir ~getattr;
+-neverallow { domain -bpfloader -init -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file *;
++neverallow { domain -bpfloader -init -iodesnort -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:dir ~getattr;
++neverallow { domain -bpfloader -init -iodesnort -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file *;
+ neverallow netutils_wrapper fs_bpf_netd_shared:file write;
+ 
+ neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server } fs_bpf_netd_shared:dir ~{ getattr open read search setattr };
+diff --git a/prebuilts/api/33.0/private/property_contexts b/prebuilts/api/33.0/private/property_contexts
+index b0d7fc9be..0d35158a2 100644
+--- a/prebuilts/api/33.0/private/property_contexts
++++ b/prebuilts/api/33.0/private/property_contexts
+@@ -1360,3 +1360,5 @@ virtualizationservice.state.last_cid u:object_r:virtualizationservice_prop:s0 ex
+ 
+ # Adaptive haptics settings property
+ vibrator.adaptive_haptics.enabled u:object_r:adaptive_haptics_prop:s0 exact string
++
++iode-snort.first_start u:object_r:iodesnort_prop:s0 exact bool
+diff --git a/prebuilts/api/33.0/public/domain.te b/prebuilts/api/33.0/public/domain.te
+index 8ec8e8823..8b39160a5 100644
+--- a/prebuilts/api/33.0/public/domain.te
++++ b/prebuilts/api/33.0/public/domain.te
+@@ -511,6 +511,7 @@ neverallow { domain -kernel with_asan(`-asan_extract') } { system_file_type vend
+ 
+ # Don't allow mounting on top of /system files or directories
+ neverallow * exec_type:dir_file_class_set mounton;
++neverallow { domain -init -otapreopt_chroot -iodesnort } { system_file_type }:dir_file_class_set mounton;
+ 
+ # Nothing should be writing to files in the rootfs, except recovery.
+ neverallow { domain -recovery } rootfs:file { create write setattr relabelto append unlink link rename };
+diff --git a/prebuilts/api/33.0/public/file.te b/prebuilts/api/33.0/public/file.te
+index 2bfa282fa..4c45567a0 100644
+--- a/prebuilts/api/33.0/public/file.te
++++ b/prebuilts/api/33.0/public/file.te
+@@ -620,3 +620,9 @@ type audiohal_data_file, file_type, data_file_type, core_data_file_type;
+ # Should be:
+ #   type apk_data_file, file_type, data_file_type;
+ neverallow fs_type file_type:filesystem associate;
++
++# /data/snort/* /system/etc/iodesnort/* for iode-snort daemon
++type snort_data_file, file_type, data_file_type, core_data_file_type;
++type iodesnort_etc_file, system_file_type, file_type;
++type iodesnortcontrol_socket, file_type, coredomain_socket, mlstrustedobject;
++type iodesnortnetd_socket, file_type, coredomain_socket, mlstrustedobject;
+diff --git a/prebuilts/api/33.0/public/iode-snort.te b/prebuilts/api/33.0/public/iode-snort.te
+new file mode 100644
+index 000000000..c7def0739
+--- /dev/null
++++ b/prebuilts/api/33.0/public/iode-snort.te
+@@ -0,0 +1,57 @@
++type iodesnort, domain, mlstrustedsubject;
++type iodesnort_exec, exec_type, file_type, system_file_type;
++
++net_domain(iodesnort)
++
++# iptables
++
++allow iodesnort system_file:file { lock execute_no_trans };
++allow iodesnort shell_exec:file rx_file_perms;
++allow iodesnort self:global_capability_class_set {
++    net_raw
++    net_admin
++};
++dontaudit iodesnort system_file:dir write;
++
++# package list
++
++allow iodesnort packages_list_file:file r_file_perms;
++
++# sockets
++
++allow iodesnort self:netlink_netfilter_socket create_socket_perms_no_ioctl;
++allow iodesnort proc_net:file r_file_perms;
++unix_socket_connect(platform_app, iodesnortcontrol, iodesnort);
++unix_socket_connect(system_server, iodesnortcontrol, iodesnort);
++unix_socket_connect(netd, iodesnortnetd, iodesnort);
++
++# default config
++
++r_dir_file(iodesnort, iodesnort_etc_file)
++
++# saved data
++
++allow iodesnort snort_data_file:dir create_dir_perms;
++allow iodesnort snort_data_file:file create_file_perms;
++
++# system properties
++
++get_prop(iodesnort, boot_status_prop);
++set_prop(iodesnort, iodesnort_prop);
++set_prop(init, iodesnort_prop);
++
++# network interfaces
++
++r_dir_file(iodesnort, sysfs_net)
++
++# default apps management
++
++allow iodesnort package_service:service_manager find;
++binder_call(iodesnort, servicemanager)
++binder_call(iodesnort, system_server)
++binder_call(system_server, iodesnort)
++selinux_check_access(iodesnort)
++allow iodesnort toolbox_exec:file rx_file_perms;
++allow iodesnort tmpfs:dir create_dir_perms;
++allow iodesnort system_file:dir mounton;
++allow iodesnort self:capability sys_admin;
+diff --git a/prebuilts/api/33.0/public/property.te b/prebuilts/api/33.0/public/property.te
+index b8e111bf5..b88151ba6 100644
+--- a/prebuilts/api/33.0/public/property.te
++++ b/prebuilts/api/33.0/public/property.te
+@@ -85,6 +85,7 @@ system_restricted_prop(provisioned_prop)
+ system_restricted_prop(restorecon_prop)
+ system_restricted_prop(retaildemo_prop)
+ system_restricted_prop(smart_idle_maint_enabled_prop)
++system_restricted_prop(iodesnort_prop)
+ system_restricted_prop(socket_hook_prop)
+ system_restricted_prop(sqlite_log_prop)
+ system_restricted_prop(surfaceflinger_display_prop)
+diff --git a/private/bpfdomain.te b/private/bpfdomain.te
+index 2be7f8874..f85ec646e 100644
+--- a/private/bpfdomain.te
++++ b/private/bpfdomain.te
+@@ -9,6 +9,6 @@ neverallow {
+ } self:global_capability_class_set { net_admin net_raw };
+ 
+ # any domain which uses bpf is a bpfdomain
+-neverallow { domain -bpfdomain } *:bpf *;
++neverallow { domain -bpfdomain -iodesnort } *:bpf *;
+ 
+ allow bpfdomain fs_bpf:dir search;
+diff --git a/private/bpfloader.te b/private/bpfloader.te
+index 54cc91666..17e6e271a 100644
+--- a/private/bpfloader.te
++++ b/private/bpfloader.te
+@@ -33,11 +33,11 @@ neverallow domain bpffs_type:dir ~{ add_name create getattr mounton open read re
+ # TODO: get rid of init & vendor_init
+ neverallow { domain -bpfloader -init -vendor_init } bpffs_type:file { map open setattr };
+ neverallow { domain -bpfloader } bpffs_type:file { create rename };
+-neverallow { domain -bpfloader -gpuservice -init -lmkd -mediaprovider_app -netd -netutils_wrapper                -system_server -vendor_init } fs_bpf:file               read;
++neverallow { domain -bpfloader -gpuservice -init -lmkd -mediaprovider_app -netd -netutils_wrapper                -iodesnort -system_server -vendor_init } fs_bpf:file               read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack                -vendor_init } fs_bpf_net_private:file   read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack -system_server -vendor_init } fs_bpf_net_shared:file    read;
+ neverallow { domain -bpfloader             -init                          -netd                   -network_stack -system_server -vendor_init } fs_bpf_netd_readonly:file read;
+-neverallow { domain -bpfloader             -init                          -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file   read;
++neverallow { domain -bpfloader             -init                          -netd -netutils_wrapper -network_stack -iodesnort -system_server -vendor_init } fs_bpf_netd_shared:file   read;
+ neverallow { domain -bpfloader             -init                                                  -network_stack                -vendor_init } fs_bpf_tethering:file     read;
+ neverallow { domain -bpfloader -gpuservice                                -netd -netutils_wrapper -network_stack -system_server              } { bpffs_type -fs_bpf_vendor }:file write;
+ neverallow domain bpffs_type:file ~{ create map open read rename setattr write };
+@@ -49,6 +49,7 @@ neverallow {
+   -bpfloader
+   -gpuservice
+   -hal_health_server
++  -iodesnort
+   -mediaprovider_app
+   -netd
+   -netutils_wrapper
+diff --git a/private/compat/32.0/32.0.ignore.cil b/private/compat/32.0/32.0.ignore.cil
+index 7c3058ebc..96863611d 100644
+--- a/private/compat/32.0/32.0.ignore.cil
++++ b/private/compat/32.0/32.0.ignore.cil
+@@ -83,4 +83,11 @@
+     vendor_vm_file
+     virtual_device_service
+     wallpaper_effects_generation_service
++    iodesnort
++    snort_data_file
++    iodesnort_etc_file
++    iodesnort_exec
++    iodesnortcontrol_socket
++    iodesnortnetd_socket
++    iodesnort_prop
+ ))
+diff --git a/private/domain.te b/private/domain.te
+index bcb9d52e3..fca9186b6 100644
+--- a/private/domain.te
++++ b/private/domain.te
+@@ -557,7 +557,7 @@ neverallow domain mlsvendorcompat:process fork;
+ 
+ # Only init and otapreopt_chroot should be mounting filesystems on locations
+ # labeled system or vendor (/product and /vendor respectively).
+-neverallow { domain -init -otapreopt_chroot } { system_file_type vendor_file_type }:dir_file_class_set mounton;
++neverallow { domain -init -otapreopt_chroot -iodesnort } { system_file_type vendor_file_type }:dir_file_class_set mounton;
+ 
+ # Only allow init and vendor_init to read/write mm_events properties
+ # NOTE: dumpstate is allowed to read any system property
+diff --git a/private/file_contexts b/private/file_contexts
+index 65baa5ddd..091480c44 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -847,3 +847,12 @@
+ /(system|product)/bin/check_dynamic_partitions  u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt_script          u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt                 u:object_r:postinstall_dexopt_exec:s0
++
++
++#############################
++# iodesnort additions
++/(system_ext|system/system_ext)/bin/iode-snort   u:object_r:iodesnort_exec:s0
++/data/snort(/.*)?          u:object_r:snort_data_file:s0
++/(system_ext|system/system_ext)/etc/iode-snort(/.*)?     u:object_r:iodesnort_etc_file:s0
++/dev/socket/iode-snort-control	u:object_r:iodesnortcontrol_socket:s0
++/dev/socket/iode-snort-netd	u:object_r:iodesnortnetd_socket:s0
+diff --git a/private/iode-snort.te b/private/iode-snort.te
+new file mode 100644
+index 000000000..a52d16bb9
+--- /dev/null
++++ b/private/iode-snort.te
+@@ -0,0 +1,7 @@
++typeattribute iodesnort coredomain;
++
++init_daemon_domain(iodesnort)
++
++allow iodesnort { fs_bpf fs_bpf_netd_shared}:dir search;
++allow iodesnort { fs_bpf fs_bpf_netd_shared}:file read;
++allow iodesnort bpfloader:bpf prog_run;
+diff --git a/private/network_stack.te b/private/network_stack.te
+index 3cdf884aa..bc20001cf 100644
+--- a/private/network_stack.te
++++ b/private/network_stack.te
+@@ -103,8 +103,8 @@ neverallow { domain -bpfloader -netd -network_stack -system_server } fs_bpf_netd
+ 
+ # T+: Only the bpfloader, netd, netutils_wrapper, network_stack and system_server should ever touch 'fs_bpf_netd_shared' programs/maps.
+ # netutils_wrapper requires access to be able to run iptables and only needs readonly access
+-neverallow { domain -bpfloader -init -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:dir ~getattr;
+-neverallow { domain -bpfloader -init -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file *;
++neverallow { domain -bpfloader -init -iodesnort -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:dir ~getattr;
++neverallow { domain -bpfloader -init -iodesnort -netd -netutils_wrapper -network_stack -system_server -vendor_init } fs_bpf_netd_shared:file *;
+ neverallow netutils_wrapper fs_bpf_netd_shared:file write;
+ 
+ neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server } fs_bpf_netd_shared:dir ~{ getattr open read search setattr };
+diff --git a/private/property_contexts b/private/property_contexts
+index b0d7fc9be..0d35158a2 100644
+--- a/private/property_contexts
++++ b/private/property_contexts
+@@ -1360,3 +1360,5 @@ virtualizationservice.state.last_cid u:object_r:virtualizationservice_prop:s0 ex
+ 
+ # Adaptive haptics settings property
+ vibrator.adaptive_haptics.enabled u:object_r:adaptive_haptics_prop:s0 exact string
++
++iode-snort.first_start u:object_r:iodesnort_prop:s0 exact bool
+diff --git a/public/domain.te b/public/domain.te
+index 8ec8e8823..8b39160a5 100644
+--- a/public/domain.te
++++ b/public/domain.te
+@@ -511,6 +511,7 @@ neverallow { domain -kernel with_asan(`-asan_extract') } { system_file_type vend
+ 
+ # Don't allow mounting on top of /system files or directories
+ neverallow * exec_type:dir_file_class_set mounton;
++neverallow { domain -init -otapreopt_chroot -iodesnort } { system_file_type }:dir_file_class_set mounton;
+ 
+ # Nothing should be writing to files in the rootfs, except recovery.
+ neverallow { domain -recovery } rootfs:file { create write setattr relabelto append unlink link rename };
+diff --git a/public/file.te b/public/file.te
+index 2bfa282fa..4c45567a0 100644
+--- a/public/file.te
++++ b/public/file.te
+@@ -620,3 +620,9 @@ type audiohal_data_file, file_type, data_file_type, core_data_file_type;
+ # Should be:
+ #   type apk_data_file, file_type, data_file_type;
+ neverallow fs_type file_type:filesystem associate;
++
++# /data/snort/* /system/etc/iodesnort/* for iode-snort daemon
++type snort_data_file, file_type, data_file_type, core_data_file_type;
++type iodesnort_etc_file, system_file_type, file_type;
++type iodesnortcontrol_socket, file_type, coredomain_socket, mlstrustedobject;
++type iodesnortnetd_socket, file_type, coredomain_socket, mlstrustedobject;
+diff --git a/public/iode-snort.te b/public/iode-snort.te
+new file mode 100644
+index 000000000..c7def0739
+--- /dev/null
++++ b/public/iode-snort.te
+@@ -0,0 +1,57 @@
++type iodesnort, domain, mlstrustedsubject;
++type iodesnort_exec, exec_type, file_type, system_file_type;
++
++net_domain(iodesnort)
++
++# iptables
++
++allow iodesnort system_file:file { lock execute_no_trans };
++allow iodesnort shell_exec:file rx_file_perms;
++allow iodesnort self:global_capability_class_set {
++    net_raw
++    net_admin
++};
++dontaudit iodesnort system_file:dir write;
++
++# package list
++
++allow iodesnort packages_list_file:file r_file_perms;
++
++# sockets
++
++allow iodesnort self:netlink_netfilter_socket create_socket_perms_no_ioctl;
++allow iodesnort proc_net:file r_file_perms;
++unix_socket_connect(platform_app, iodesnortcontrol, iodesnort);
++unix_socket_connect(system_server, iodesnortcontrol, iodesnort);
++unix_socket_connect(netd, iodesnortnetd, iodesnort);
++
++# default config
++
++r_dir_file(iodesnort, iodesnort_etc_file)
++
++# saved data
++
++allow iodesnort snort_data_file:dir create_dir_perms;
++allow iodesnort snort_data_file:file create_file_perms;
++
++# system properties
++
++get_prop(iodesnort, boot_status_prop);
++set_prop(iodesnort, iodesnort_prop);
++set_prop(init, iodesnort_prop);
++
++# network interfaces
++
++r_dir_file(iodesnort, sysfs_net)
++
++# default apps management
++
++allow iodesnort package_service:service_manager find;
++binder_call(iodesnort, servicemanager)
++binder_call(iodesnort, system_server)
++binder_call(system_server, iodesnort)
++selinux_check_access(iodesnort)
++allow iodesnort toolbox_exec:file rx_file_perms;
++allow iodesnort tmpfs:dir create_dir_perms;
++allow iodesnort system_file:dir mounton;
++allow iodesnort self:capability sys_admin;
+diff --git a/public/property.te b/public/property.te
+index b8e111bf5..b88151ba6 100644
+--- a/public/property.te
++++ b/public/property.te
+@@ -85,6 +85,7 @@ system_restricted_prop(provisioned_prop)
+ system_restricted_prop(restorecon_prop)
+ system_restricted_prop(retaildemo_prop)
+ system_restricted_prop(smart_idle_maint_enabled_prop)
++system_restricted_prop(iodesnort_prop)
+ system_restricted_prop(socket_hook_prop)
+ system_restricted_prop(sqlite_log_prop)
+ system_restricted_prop(surfaceflinger_display_prop)
+-- 
+2.41.0
+
